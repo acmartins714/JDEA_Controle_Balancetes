@@ -87,14 +87,13 @@ def excel_to_minio_etl_parquet_full(plan_name: str, bucket_bronze: str, endpoint
         # Dizendo ao Playwright para aguardar o final do download
         with page.expect_download() as download_info:
             # iniciando o download
-            btb_excel = page.locator("iframe[name=\"body\"]").content_frame.get_by_title("Exportar p/ Excel",
-                                                                                         exact=True)
+            btb_excel = page.locator("iframe[name=\"body\"]").content_frame.get_by_title("Exportar p/ Excel", exact=True)
             btb_excel.click()
 
         # Obtendo os dados do download realizado
         download = download_info.value
         # Salvando o arquivo baixado (Fornecendo local e nome do arquivo)
-        download.save_as("Balancetes_Mensais.xls")  # + download.suggested_filename)
+        download.save_as("/opt/airflow/data/Balancetes_Mensais.xls")  # + download.suggested_filename)
         sleep(2)  # aguardando um tempo para simular um comportamento humano
 
         # Fechando o contextos e o browse

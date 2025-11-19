@@ -60,6 +60,7 @@ services:
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/config_airflow:/opt/airflow/config_airflow
+      - ./data:/opt/airflow/data
     command: 
       bash -c "
       airflow db init &&
