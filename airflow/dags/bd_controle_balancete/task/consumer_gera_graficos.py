@@ -48,110 +48,125 @@ def process_consumer_layer():
         # Gerando valores do gráfico
         categorias = ['Prefeitura', 'Câmara', 'Independente', 'Indireta']
 
+        # Lista com os sistemas participantes do controle
+
+        sistemas = [
+            ["3","CONTABILIDADE"],
+            ["1","FOLHA"],["18","FARMÁCIA"],
+            ["19","FROTA"]]
+
         cursor = conexaoFDB.cursor()
-        sql = 'Select ' + \
-              '  1 as Id, ' + \
-              '  \'Total de Entidades\' as Descricao, ' + \
-              '  Coalesce((Select Count(Cod_Orgao) From Clientes Where SubString(Cod_Orgao From 1 For 1) = \'1\' and Sistema = 3), 0.00) as QuantidadeCamara, ' + \
-              '  Coalesce((Select Count(Cod_Orgao) as QuantidadePrefeitura From Clientes Where SubString(Cod_Orgao From 1 For 1) = \'2\' and Sistema = 3), 0.00) as QuantidadePrefeitura, ' + \
-              '  Coalesce((Select Count(Cod_Orgao) as QuantidadeIndiretas From Clientes Where SubString(Cod_Orgao From 1 For 1) in (\'3\',\'4\',\'5\',\'6\') and Sistema = 3), 0.00) as QuantidadeIndiretas, ' + \
-              '  Coalesce((Select Count(Cod_Orgao) as QuantidadeIndiretas From Clientes Where SubString(Cod_Orgao From 1 For 1) = \'7\' and Sistema = 3), 0.00) as QuantidadeIndependentes ' + \
-              'From ' + \
-              '  RDB$DATABASE ' + \
-              'Union All ' + \
-              'Select ' + \
-              '  2 as Id, ' + \
-              '  \'Entidades Entregues\' as Descricao, ' + \
-              '  Coalesce((Select Count(Clientes.Cod_Orgao) From Clientes Where SubString(Clientes.Cod_Orgao From 1 For 1) = \'1\' and Clientes.Sistema = 3 and Clientes.UF = \'PB\' and exists(Select 1 From Balancetes Where Balancetes.Competencia = \'' + competencia + '\' and Balancetes.Cod_Orgao = Clientes.Cod_Orgao)), 0.00) as QuantidadeCamara, ' + \
-              '  Coalesce((Select Count(Clientes.Cod_Orgao) From Clientes Where SubString(Clientes.Cod_Orgao From 1 For 1) = \'2\' and Clientes.Sistema = 3 and Clientes.UF = \'PB\' and exists(Select 1 From Balancetes Where Balancetes.Competencia = \'' + competencia + '\' and Balancetes.Cod_Orgao = \'201\' || SubString(Clientes.Cod_Orgao From 4 For 3))), 0.00)  as QuantidadePrefeitura, ' + \
-              '  Coalesce((Select Count(Clientes.Cod_Orgao) From Clientes Where SubString(Clientes.Cod_Orgao From 1 For 1) in (\'3\',\'4\',\'5\',\'6\') and Clientes.Sistema = 3 and Clientes.UF = \'PB\' and exists(Select 1 From Balancetes Where Balancetes.Competencia = \'' + competencia + '\' and Balancetes.Cod_Orgao = \'201\' || SubString(Clientes.Cod_Orgao From 4 For 3))), 0.00) as QuantidadeIndiretas, ' + \
-              '  Coalesce((Select Count(Clientes.Cod_Orgao) From Clientes Where SubString(Clientes.Cod_Orgao From 1 For 1) = \'7\' and Clientes.Sistema = 3 and Clientes.UF = \'PB\' and Exists(Select 1 From Balancetes Where Balancetes.Competencia = \'' + competencia + '\' and Balancetes.Cod_Orgao = Clientes.Cod_Orgao)), 0.00) as QuantidadeIndependentes ' + \
-              'From ' + \
-              '  RDB$DATABASE ' + \
-              'Union All ' + \
-              'Select ' + \
-              '  3 as Id, ' + \
-              '  \'Entidades Pendentes\' as Descricao, ' + \
-              '  Coalesce((Select Count(Clientes.Cod_Orgao) From Clientes Where SubString(Clientes.Cod_Orgao From 1 For 1) = \'1\' and Clientes.Sistema = 3 and Clientes.UF = \'PB\' and not Exists(Select 1 From Balancetes Where Balancetes.Competencia = \'' + competencia + '\' and Balancetes.Cod_Orgao = Clientes.Cod_Orgao)), 0.00) as QuantidadeCamara, ' + \
-              '  Coalesce((Select Count(Clientes.Cod_Orgao) From Clientes Where SubString(Clientes.Cod_Orgao From 1 For 1) = \'2\' and Clientes.Sistema = 3 and Clientes.UF = \'PB\' and not Exists(Select 1 From Balancetes Where Balancetes.Competencia = \'' + competencia + '\' and Balancetes.Cod_Orgao = Clientes.Cod_Orgao)), 0.00) as QuantidadePrefeitura, ' + \
-              '  Coalesce((Select Count(Clientes.Cod_Orgao) From Clientes Where SubString(Clientes.Cod_Orgao From 1 For 1) in (\'3\',\'4\',\'5\',\'6\') and Clientes.Sistema = 3 and Clientes.UF = \'PB\' and not exists(Select 1 From Balancetes Where Balancetes.Competencia = \'' + competencia + '\' and Balancetes.Cod_Orgao = \'201\' || SubString(Clientes.Cod_Orgao From 4 For 3))), 0.00) as QuantidadeIndiretas, ' + \
-              '  Coalesce((Select Count(Clientes.Cod_Orgao) From Clientes Where SubString(Clientes.Cod_Orgao From 1 For 1) = \'7\' and Clientes.Sistema = 3 and Clientes.UF = \'PB\' and not Exists(Select 1 From Balancetes Where Balancetes.Competencia = \'' + competencia + '\' and Balancetes.Cod_Orgao = Clientes.Cod_Orgao)), 0.00) as QuantidadeIndependentes ' + \
-              'From ' + \
-              '  RDB$DATABASE '
 
-        cursor.execute(sql)
-        dadosGrafico = cursor.fetchall()
-        balancetesEntregues = []
-        balancetesPendentes = []
-        contador = 0
-        qtdEntregas = 0
-        qtdPendentes = 0
+        for sistema in range(len(sistemas[0])):
 
-        for linha in dadosGrafico:
+            try:
+                sql = 'Select ' + \
+                      '  1 as Id, ' + \
+                      '  \'Total de Entidades\' as Descricao, ' + \
+                      '  Coalesce((Select Count(Cod_Orgao) From Clientes Where SubString(Cod_Orgao From 1 For 1) = \'1\' and Sistema = ' + sistemas[sistema][0] + '), 0.00) as QuantidadeCamara, ' + \
+                      '  Coalesce((Select Count(Cod_Orgao) as QuantidadePrefeitura From Clientes Where SubString(Cod_Orgao From 1 For 1) = \'2\' and Sistema = ' + sistemas[sistema][0] + '), 0.00) as QuantidadePrefeitura, ' + \
+                      '  Coalesce((Select Count(Cod_Orgao) as QuantidadeIndiretas From Clientes Where SubString(Cod_Orgao From 1 For 1) in (\'3\',\'4\',\'5\',\'6\') and Sistema = ' + sistemas[sistema][0] + '), 0.00) as QuantidadeIndiretas, ' + \
+                      '  Coalesce((Select Count(Cod_Orgao) as QuantidadeIndiretas From Clientes Where SubString(Cod_Orgao From 1 For 1) = \'7\' and Sistema = ' + sistemas[sistema][0] + '), 0.00) as QuantidadeIndependentes ' + \
+                      'From ' + \
+                      '  RDB$DATABASE ' + \
+                      'Union All ' + \
+                      'Select ' + \
+                      '  2 as Id, ' + \
+                      '  \'Entidades Entregues\' as Descricao, ' + \
+                      '  Coalesce((Select Count(Clientes.Cod_Orgao) From Clientes Where SubString(Clientes.Cod_Orgao From 1 For 1) = \'1\' and Clientes.Sistema = ' + sistemas[sistema][0] + ' and Clientes.UF = \'PB\' and exists(Select 1 From Balancetes Where Balancetes.Competencia = \'' + competencia + '\' and Balancetes.Cod_Orgao = Clientes.Cod_Orgao)), 0.00) as QuantidadeCamara, ' + \
+                      '  Coalesce((Select Count(Clientes.Cod_Orgao) From Clientes Where SubString(Clientes.Cod_Orgao From 1 For 1) = \'2\' and Clientes.Sistema = ' + sistemas[sistema][0] + ' and Clientes.UF = \'PB\' and exists(Select 1 From Balancetes Where Balancetes.Competencia = \'' + competencia + '\' and Balancetes.Cod_Orgao = \'201\' || SubString(Clientes.Cod_Orgao From 4 For 3))), 0.00)  as QuantidadePrefeitura, ' + \
+                      '  Coalesce((Select Count(Clientes.Cod_Orgao) From Clientes Where SubString(Clientes.Cod_Orgao From 1 For 1) in (\'3\',\'4\',\'5\',\'6\') and Clientes.Sistema = ' + sistemas[sistema][0] + ' and Clientes.UF = \'PB\' and exists(Select 1 From Balancetes Where Balancetes.Competencia = \'' + competencia + '\' and Balancetes.Cod_Orgao = \'201\' || SubString(Clientes.Cod_Orgao From 4 For 3))), 0.00) as QuantidadeIndiretas, ' + \
+                      '  Coalesce((Select Count(Clientes.Cod_Orgao) From Clientes Where SubString(Clientes.Cod_Orgao From 1 For 1) = \'7\' and Clientes.Sistema = ' + sistemas[sistema][0] + ' and Clientes.UF = \'PB\' and Exists(Select 1 From Balancetes Where Balancetes.Competencia = \'' + competencia + '\' and Balancetes.Cod_Orgao = Clientes.Cod_Orgao)), 0.00) as QuantidadeIndependentes ' + \
+                      'From ' + \
+                      '  RDB$DATABASE ' + \
+                      'Union All ' + \
+                      'Select ' + \
+                      '  3 as Id, ' + \
+                      '  \'Entidades Pendentes\' as Descricao, ' + \
+                      '  Coalesce((Select Count(Clientes.Cod_Orgao) From Clientes Where SubString(Clientes.Cod_Orgao From 1 For 1) = \'1\' and Clientes.Sistema = ' + sistemas[sistema][0] + ' and Clientes.UF = \'PB\' and not Exists(Select 1 From Balancetes Where Balancetes.Competencia = \'' + competencia + '\' and Balancetes.Cod_Orgao = Clientes.Cod_Orgao)), 0.00) as QuantidadeCamara, ' + \
+                      '  Coalesce((Select Count(Clientes.Cod_Orgao) From Clientes Where SubString(Clientes.Cod_Orgao From 1 For 1) = \'2\' and Clientes.Sistema = ' + sistemas[sistema][0] + ' and Clientes.UF = \'PB\' and not Exists(Select 1 From Balancetes Where Balancetes.Competencia = \'' + competencia + '\' and Balancetes.Cod_Orgao = Clientes.Cod_Orgao)), 0.00) as QuantidadePrefeitura, ' + \
+                      '  Coalesce((Select Count(Clientes.Cod_Orgao) From Clientes Where SubString(Clientes.Cod_Orgao From 1 For 1) in (\'3\',\'4\',\'5\',\'6\') and Clientes.Sistema = ' + sistemas[sistema][0] + ' and Clientes.UF = \'PB\' and not exists(Select 1 From Balancetes Where Balancetes.Competencia = \'' + competencia + '\' and Balancetes.Cod_Orgao = \'201\' || SubString(Clientes.Cod_Orgao From 4 For 3))), 0.00) as QuantidadeIndiretas, ' + \
+                      '  Coalesce((Select Count(Clientes.Cod_Orgao) From Clientes Where SubString(Clientes.Cod_Orgao From 1 For 1) = \'7\' and Clientes.Sistema = ' + sistemas[sistema][0] + ' and Clientes.UF = \'PB\' and not Exists(Select 1 From Balancetes Where Balancetes.Competencia = \'' + competencia + '\' and Balancetes.Cod_Orgao = Clientes.Cod_Orgao)), 0.00) as QuantidadeIndependentes ' + \
+                      'From ' + \
+                      '  RDB$DATABASE '
 
-            if contador == 1:
-                qtdEntregas = linha[2] + linha[3] + linha[4] + linha[5]  # Guarda a quantidade total de balancetes recebidos
-                balancetesEntregues.append(linha[3])  # Câmara 2
-                balancetesEntregues.append(linha[2])  # Prefeito 3
-                balancetesEntregues.append(linha[5])  # Indiretas 4
-                balancetesEntregues.append(linha[4])  # Independentes 5
-            else:
-                if contador == 2:
-                    qtdPendentes = linha[2] + linha[3] + linha[4] + linha[
-                        5]  # Guarda a quantidade total de balancetes pendentes
-                    balancetesPendentes.append(linha[3])
-                    balancetesPendentes.append(linha[2])
-                    balancetesPendentes.append(linha[5])
-                    balancetesPendentes.append(linha[4])
+                cursor.execute(sql)
+                dadosGrafico = cursor.fetchall()
 
-            contador = contador + 1
+            except firebirdsql.Error as err:
+                logger.info(f"Erro ao executar consulta ao banco de dados (Sistema: {sistemas[sistema][0]} - {sistemas[sistema][1]}): {err}")
 
-        # Definir a largura das barras e as posições
-        bar_largura = 0.35
-        posicoes = np.arange(len(categorias))
+            balancetesEntregues = []
+            balancetesPendentes = []
+            contador = 0
+            qtdEntregas = 0
+            qtdPendentes = 0
 
-        # Criar o gráfico
-        fig, ax = plt.subplots()
-        barra1 = ax.bar(posicoes - bar_largura / 2, balancetesEntregues, bar_largura, label='Entregues', color='green')
+            for linha in dadosGrafico:
 
-        for barra in barra1:
-            altura = int(barra.get_height())
-            plt.annotate(f'{altura}',  # Texto a ser exibido
-                         xy=(barra.get_x() + barra.get_width() / 2, altura),  # Posição (x, y)
-                         ha='center',  # Alinhamento horizontal: centralizado
-                         va='bottom')  # Alinhamento vertical: abaixo do ponto xy
+                if contador == 1:
+                    qtdEntregas = linha[2] + linha[3] + linha[4] + linha[5]  # Guarda a quantidade total de balancetes recebidos
+                    balancetesEntregues.append(linha[3])  # Câmara 2
+                    balancetesEntregues.append(linha[2])  # Prefeito 3
+                    balancetesEntregues.append(linha[5])  # Indiretas 4
+                    balancetesEntregues.append(linha[4])  # Independentes 5
+                else:
+                    if contador == 2:
+                        qtdPendentes = linha[2] + linha[3] + linha[4] + linha[
+                            5]  # Guarda a quantidade total de balancetes pendentes
+                        balancetesPendentes.append(linha[3])
+                        balancetesPendentes.append(linha[2])
+                        balancetesPendentes.append(linha[5])
+                        balancetesPendentes.append(linha[4])
 
-        barra2 = ax.bar(posicoes + bar_largura / 2, balancetesPendentes, bar_largura, label='Pendentes', color='red')
+                contador = contador + 1
 
-        for barra in barra2:
-            altura = int(barra.get_height())
-            plt.annotate(f'{altura}',  # Texto a ser exibido
-                         xy=(barra.get_x() + barra.get_width() / 2, altura),  # Posição (x, y)
-                         ha='center',  # Alinhamento horizontal: centralizado
-                         va='bottom')  # Alinhamento vertical: abaixo do ponto xy
+            # Definir a largura das barras e as posições
+            bar_largura = 0.35
+            posicoes = np.arange(len(categorias))
 
-        # Adicionar rótulos, título e legenda
-        ax.set_ylabel('Quantidade de entes')
+            # Criar o gráfico
+            fig, ax = plt.subplots()
+            barra1 = ax.bar(posicoes - bar_largura / 2, balancetesEntregues, bar_largura, label='Entregues', color='green')
 
-        percPendente = (qtdPendentes / (qtdPendentes + qtdEntregas)) * 100
-        percEntregue = 100 - percPendente
+            for barra in barra1:
+                altura = int(barra.get_height())
+                plt.annotate(f'{altura}',  # Texto a ser exibido
+                             xy=(barra.get_x() + barra.get_width() / 2, altura),  # Posição (x, y)
+                             ha='center',  # Alinhamento horizontal: centralizado
+                             va='bottom')  # Alinhamento vertical: abaixo do ponto xy
 
-        ax.set_title('[ CLIENTES PB - CONTABILIDADE - Envio dos balancetes: ' + \
-                     competencia[0:2] + '/' + \
-                     competencia[-4:] + ' ]' + \
-                     '\nPendente: ' + f'{percPendente:.2f}' + '% / Enviado: ' + f'{percEntregue:.2f}' + '%')
+            barra2 = ax.bar(posicoes + bar_largura / 2, balancetesPendentes, bar_largura, label='Pendentes', color='red')
 
-        ax.set_xticks(posicoes)
-        ax.set_xticklabels(categorias)
-        ax.legend()
+            for barra in barra2:
+                altura = int(barra.get_height())
+                plt.annotate(f'{altura}',  # Texto a ser exibido
+                             xy=(barra.get_x() + barra.get_width() / 2, altura),  # Posição (x, y)
+                             ha='center',  # Alinhamento horizontal: centralizado
+                             va='bottom')  # Alinhamento vertical: abaixo do ponto xy
 
-        # Exibir o gráfico
-        plt.tight_layout()  # Ajusta o layout para evitar sobreposição
-        # plt.show()
-        plt.savefig('/opt/airflow/data/GraficoSistema3_' + competencia + '.png', dpi=300)
+            # Adicionar rótulos, título e legenda
+            ax.set_ylabel('Quantidade de entes')
+
+            percPendente = (qtdPendentes / (qtdPendentes + qtdEntregas)) * 100
+            percEntregue = 100 - percPendente
+
+            ax.set_title('[ CLIENTES PB - ' + sistemas[sistema][1] + ' - Envio dos balancetes: ' + \
+                         competencia[0:2] + '/' + \
+                         competencia[-4:] + ' ]' + \
+                         '\nPendente: ' + f'{percPendente:.2f}' + '% / Enviado: ' + f'{percEntregue:.2f}' + '%')
+
+            ax.set_xticks(posicoes)
+            ax.set_xticklabels(categorias)
+            ax.legend()
+
+            # Exibir o gráfico
+            plt.tight_layout()  # Ajusta o layout para evitar sobreposição
+            # plt.show()
+            plt.savefig('/opt/airflow/data/GraficoSistema' + sistemas[sistema][0] + '_' + competencia + '.png', dpi=300)
 
     except Exception as e:
-        logger.error(f"Erro ao obter dados dp Firebird: {e}")
+        logger.error(f"Erro ao obter dados do Firebird: {e}")
         raise
     finally:
         # Encerrando a conexão com o Firebird

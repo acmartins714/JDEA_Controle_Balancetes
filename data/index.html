@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard de Imagens</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      padding: 20px;
+    }
+
+    .gallery img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease;
+    }
+
+    .gallery img:hover {
+      transform: scale(1.05);
+    }
+
+    @media (max-width: 600px) {
+      .gallery {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Balancetes 10/2025 Consulta realizada em 21 de Novembro de 2025 às 01:02</h1>
+  <div class="gallery" id="imageGallery"></div>
+
+  <script>
+    // Lista de imagens PNG (nomes dos arquivos)
+    const imageFolder = '';
+    const imageFiles = [
+      'GraficoSistema3_102025.png',
+      'GraficoSistema1_102025.png',
+      'GraficoSistema18_102025.png',
+      'GraficoSistema18_102025.png'
+    ];
+
+    const gallery = document.getElementById('imageGallery');
+
+    imageFiles.forEach(file => {
+      const img = document.createElement('img');
+      img.src = `${imageFolder}${file}`;
+      img.alt = file;
+      gallery.appendChild(img);
+    });
+  </script>
+</body>
+</html>
