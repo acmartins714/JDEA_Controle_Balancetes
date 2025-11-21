@@ -61,7 +61,7 @@ services:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/config_airflow:/opt/airflow/config_airflow
       - ./data:/opt/airflow/data
-    command: 
+    command:
       bash -c "
       airflow db init &&
       airflow users create --username admin --firstname Admin --lastname User --role Admin --email admin@example.com --password admin123 &&

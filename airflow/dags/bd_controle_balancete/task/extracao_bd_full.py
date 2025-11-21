@@ -20,6 +20,7 @@ def excel_to_minio_etl_parquet_full(plan_name: str, bucket_bronze: str, endpoint
         aws_secret_access_key=secret_key
     )
 
+    '''
     # Realizar raspagem dos dados necessários no site do TCE-PB
     # realizando raspagem no site do TCE-PB para obter os dados atualizados de remessa de balancetes
 
@@ -44,7 +45,7 @@ def excel_to_minio_etl_parquet_full(plan_name: str, bucket_bronze: str, endpoint
         botao.click()
         sleep(2)  # aguardando um tempo para simular um comportamento humano
 
-        print('preenchendo os campos necessários no formulário de pesquisa')  # ajustar saída para o log do Airflow
+        logging.error("preenchendo os campos necessários no formulário de pesquisa")  # ajustar saída para o log do Airflow
 
         # Localiza e preenche o campo categoria
         cbx_categoria = page.locator("iframe[name=\"body\"]").content_frame.get_by_label("Categoria", exact=True)
@@ -81,7 +82,7 @@ def excel_to_minio_etl_parquet_full(plan_name: str, bucket_bronze: str, endpoint
 
         # Criando evento para exibicão do local e nome de arquivo baixado (A informação exibida são de local e nome de arquivos temporários)
         page.on("download",
-                lambda download: print(download.path()))  # ajustar saída para o log do Airflow (Não é necessário)
+                lambda download: logging.error(download.path()))  # ajustar saída para o log do Airflow (Não é necessário)
 
         # Fazendo o download da planilha com os dados retornados na pesquisa
         # Dizendo ao Playwright para aguardar o final do download
@@ -99,7 +100,7 @@ def excel_to_minio_etl_parquet_full(plan_name: str, bucket_bronze: str, endpoint
         # Fechando o contextos e o browse
         page.close()
         browser.close()
-
+    '''
     # Abrir planilha do Excel e tranformar os dados em um dataFrame para gravar em parquet.
     def get_excel_sheet_data(plan_name):
         try:
@@ -109,7 +110,8 @@ def excel_to_minio_etl_parquet_full(plan_name: str, bucket_bronze: str, endpoint
           logging.error(f"Erro ao obter dados da planilha do TCE-PB: {e}")
           raise
 
-     # Escrita dos dados no minio
+
+    # Escrita dos dados no minio
     try:
         df = get_excel_sheet_data(plan_name)
         parquet_buffer = io.BytesIO()

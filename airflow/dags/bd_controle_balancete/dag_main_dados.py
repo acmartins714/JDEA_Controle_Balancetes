@@ -5,6 +5,8 @@ from airflow.utils.dates import days_ago
 from airflow.utils.task_group import TaskGroup
 from datetime import timedelta
 from bd_controle_balancete.task.extracao_bd_full import excel_to_minio_etl_parquet_full
+from bd_controle_balancete.task.transform_parquet_bd import process_silver_layer
+from bd_controle_balancete.task.consumer_gera_graficos import process_consumer_layer
 
 # Argumentos iniciais.
 default_args = {
@@ -14,13 +16,13 @@ default_args = {
     'email_on_failure': False,
     'email_on_retry': False,
     'retries': 1,
-    'retry_delay': timedelta(minutes=1),
+    'retry_delay': timedelta(minutes=5),
 }
 
 
 # Parametro para dags
 @dag(
-    dag_id='dag_main_tcepbElmar_dados',
+    dag_id='dag_main_dados',
     default_args=default_args,
     description='Dag curso JDEA - TCE-PB / Elmar',
     schedule_interval=timedelta(days=1),
@@ -29,7 +31,7 @@ default_args = {
 )
 
 def main_dag():
-    plan_name = 'Balancetes_Mensais.xls'  # Caminho para a planilha do TCE-PB
+    plan_name = '/opt/airflow/data/Balancetes_Mensais.xls'  # Caminho para a planilha do TCE-PB
     endpoint_url = 'http://minio:9000'
     access_key = 'minioadmin'
     secret_key = 'minio@1234!'
@@ -42,7 +44,26 @@ def main_dag():
             python_callable=excel_to_minio_etl_parquet_full,
             op_args=[plan_name, bucket_bronze, endpoint_url, access_key, secret_key]
         )
+
+    # TaskGroup: Extração dos dados da planilha foenecida pelo TCE-PB após raspagem de dados
+    with TaskGroup("group_task_transform_parquet_bd", tooltip="Tasks processadas do parquet para o banco de dados (Firebird Bucket Silver)") as group_task_transform_parquet_bd:
+        PythonOperator(
+            task_id='task_transform_parquet_bd',
+            python_callable=process_silver_layer,
+            op_args=[bucket_bronze, endpoint_url, access_key, secret_key]
+        )
+
+    # TaskGroup: Geração de graficos a partir do banco de dados
+    with TaskGroup("group_task_consumer_gera_graficos", tooltip="Tasks de geração de gráficos para controle da entrega de balancetes (Firebird Bucket Gold)") as group_task_consumer_gera_graficos:
+        PythonOperator(
+            task_id='task_consumer_gera_graficos',
+            python_callable=process_consumer_layer,
+            op_args=[]
+        )
+
     # Fluxo de dependência
-    group_task_parquet_full
+    group_task_parquet_full,
+    group_task_transform_parquet_bd
+    group_task_consumer_gera_graficos
 
 main_dag_instance = main_dag()
