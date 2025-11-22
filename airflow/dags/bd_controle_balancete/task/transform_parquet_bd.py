@@ -38,7 +38,7 @@ def process_silver_layer(bucket_bronze: str, endpoint_url: str, access_key: str,
     # daods são baixados e gravados em sua forma bruta
     try:
         conexaoFDB = firebirdsql.connect(
-            host="192.168.15.245",
+            host="10.253.67.215", #192.168.15.245
             database="D://jdea//ControleBalancetes//airflow//dags//bd_controle_balancete//controlebalancete.fdb",
             user="SYSDBA",
             password="masterkey",

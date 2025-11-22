@@ -28,7 +28,7 @@ def process_consumer_layer():
         try:
 
             conexaoFDB = firebirdsql.connect(
-                host="192.168.15.245",
+                host="10.253.67.215", #192.168.15.245
                 database="D://jdea//ControleBalancetes//airflow//dags//bd_controle_balancete//controlebalancete.fdb",
                 user="SYSDBA",
                 password="masterkey",
